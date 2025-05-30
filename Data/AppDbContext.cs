@@ -12,7 +12,7 @@ namespace SSToDo.Data
         public DbSet<User> tblUsers { get; set; }
         public DbSet<Project> tblProjects { get; set; }
         public DbSet<ProjectUser> tblProjectUsers { get; set; }
-        public DbSet<TaskItem> tblTaskItems { get; set; }
+        public DbSet<TaskItem> tblTasks { get; set; }
 
         #endregion
 
@@ -53,6 +53,7 @@ namespace SSToDo.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             #endregion
+
         }
     }
 }

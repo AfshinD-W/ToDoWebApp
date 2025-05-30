@@ -12,7 +12,7 @@ namespace SSToDo.Entity
         public string Description { get; set; }
 
         public Priority Priority { get; set; }
-        public int EstimatedDays { get; set; }
+        public int DurationDays { get; set; }
 
         public TaskStatusEnum Status { get; set; } = TaskStatusEnum.Open;
 
