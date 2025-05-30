@@ -1,11 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using SSToDo.Data;
+using SSToDo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserService, UserService>();
+
 
 
 builder.Services.AddControllers();
