@@ -49,9 +49,19 @@ namespace SSToDo.Controllers
         }
 
         [HttpPost("add-members/{projectId}")]
-        public async Task<IActionResult> AddMemberToProjectAsync(List<int> userIds, int projectId)
+        public async Task<IActionResult> AddMemberToProjectAsync([FromBody] List<int> memberIds, int projectId)
         {
-            var result = await _projectService.AddMemberToProjectAsync(userIds, projectId);
+            var result = await _projectService.AddMemberToProjectAsync(memberIds, projectId);
+
+            if (result.Data == null)
+                return BadRequest(result.Message);
+            return Ok(result);
+        }
+
+        [HttpDelete("remove-members/{projectId}")]
+        public async Task<IActionResult> RemoveMemberFromProjectAsync([FromBody] List<int> memberIds, int projectId)
+        {
+            var result = await _projectService.RemoveMemberFromProjectAsync(memberIds, projectId);
 
             if (result.Data == null)
                 return BadRequest(result.Message);

@@ -11,7 +11,8 @@ namespace SSToDo.Services
         Task<ServiceResponse<List<Project>>> GetProjectsAsync();
         Task<ServiceResponse<ResponseProjectDto>> CreateProjectAsync(CreateProjectDto project);
         Task<ServiceResponse<ResponseProjectDto>> UpdateProjectAsync(UpdateProjectDto project, int projectId);
-        Task<ServiceResponse<List<int>>> AddMemberToProjectAsync(List<int> userIds, int projectId);
+        Task<ServiceResponse<List<int>>> AddMemberToProjectAsync(List<int> memberIds, int projectId);
+        Task<ServiceResponse<string>> RemoveMemberFromProjectAsync(List<int> memberIds, int projectId);
         Task<ServiceResponse<string>> DeleteProjectAsync(int projectId);
     }
 
@@ -106,9 +107,12 @@ namespace SSToDo.Services
             return new ServiceResponse<ResponseProjectDto>(responseDto);
         }
 
-        //AddMember to project
-        public async Task<ServiceResponse<List<int>>> AddMemberToProjectAsync(List<int> userIds, int projectId)
+        //Add member to project
+        public async Task<ServiceResponse<List<int>>> AddMemberToProjectAsync(List<int> memberIds, int projectId)
         {
+            if (memberIds == null || projectId == null)
+                return new ServiceResponse<List<int>>("Invalid inputs");
+
             var project = await _context.Projects
                 .Where(p => p.Id == projectId)
                 .Include(p => p.ProjectUsers)
@@ -126,7 +130,7 @@ namespace SSToDo.Services
 
             var newUsersToAdd = new List<ProjectUser>();
 
-            foreach (var userId in userIds)
+            foreach (var userId in memberIds)
             {
                 if (!project.ExistingUserIds.Contains(userId))
                     newUsersToAdd.Add(new ProjectUser
@@ -143,6 +147,44 @@ namespace SSToDo.Services
             }
 
             return new ServiceResponse<List<int>>(newUsersToAdd.Select(u => u.UserId).ToList());
+        }
+
+        //Remove member from project
+        public async Task<ServiceResponse<string>> RemoveMemberFromProjectAsync(List<int> memberIds, int projectId)
+        {
+            if (memberIds == null || !memberIds.Any())
+                return new ServiceResponse<string>("No users provided for removal");
+
+            var project = await _context.Projects
+                .Include(p => p.ProjectUsers)
+                .SingleOrDefaultAsync(p => p.Id == projectId);
+
+            if (project == null)
+                return new ServiceResponse<string>("Project does not exist");
+
+            var currentUserId = _userContextService.GetUserId();
+            var isAdmin = project.ProjectUsers.Any(u => u.UserId == currentUserId && u.IsAdmin);
+            if (!isAdmin)
+                return new ServiceResponse<string>("You are not the admin");
+
+            var userForDelete = project.ProjectUsers
+                 .Where(u => memberIds.Contains(u.UserId))
+                 .ToList();
+
+            var notExistsMembers = memberIds.Except(userForDelete.Select(u => u.UserId)).ToList();
+
+
+            if (notExistsMembers.Any())
+                return new ServiceResponse<string>($"Members with ID: {string.Join(", ", notExistsMembers)} are not in project!");
+
+            if (userForDelete.Any(u => u.UserId == currentUserId))
+                return new ServiceResponse<string>("You cant delete admin!");
+
+            _context.ProjectUsers.RemoveRange(userForDelete);
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse<string>($"Users with ID: {string.Join(", ", userForDelete.Select(u => u.UserId))} deleted successfully")
+            { Data = $"Users with ID: {string.Join(", ", userForDelete.Select(u => u.UserId))} deleted successfully" };
         }
 
         //Delete project

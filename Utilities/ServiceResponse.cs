@@ -7,7 +7,6 @@ namespace SSToDo.Utilities
         [JsonIgnore]
         public string Message { get; set; }
         [JsonIgnore]
-
         public T Data { get; set; }
 
         public ServiceResponse(string message)
