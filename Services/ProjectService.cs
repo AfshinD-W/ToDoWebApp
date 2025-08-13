@@ -11,6 +11,7 @@ namespace SSToDo.Services
         Task<ServiceResponse<List<Project>>> GetProjectsAsync();
         Task<ServiceResponse<ResponseProjectDto>> CreateProjectAsync(CreateProjectDto project);
         Task<ServiceResponse<ResponseProjectDto>> UpdateProjectAsync(UpdateProjectDto project, int projectId);
+        Task<ServiceResponse<List<int>>> AddMemberToProjectAsync(List<int> userIds, int projectId);
         Task<ServiceResponse<string>> DeleteProjectAsync(int projectId);
     }
 
@@ -103,6 +104,45 @@ namespace SSToDo.Services
                 CreatedAt = entity.CreatedAt
             };
             return new ServiceResponse<ResponseProjectDto>(responseDto);
+        }
+
+        //AddMember to project
+        public async Task<ServiceResponse<List<int>>> AddMemberToProjectAsync(List<int> userIds, int projectId)
+        {
+            var project = await _context.Projects
+                .Where(p => p.Id == projectId)
+                .Include(p => p.ProjectUsers)
+                .Select(p => new
+                {
+                    Project = p,
+                    IsAdmin = p.ProjectUsers.Any(u => u.UserId == _userContextService.GetUserId() && u.IsAdmin),
+                    ExistingUserIds = p.ProjectUsers.Select(u => u.UserId).ToList()
+                }).SingleOrDefaultAsync();
+
+            if (project == null)
+                return new ServiceResponse<List<int>>("Project does not exist");
+            if (!project.IsAdmin)
+                return new ServiceResponse<List<int>>("You are not the admin");
+
+            var newUsersToAdd = new List<ProjectUser>();
+
+            foreach (var userId in userIds)
+            {
+                if (!project.ExistingUserIds.Contains(userId))
+                    newUsersToAdd.Add(new ProjectUser
+                    {
+                        ProjectId = projectId,
+                        UserId = userId
+                    });
+            }
+
+            if (newUsersToAdd.Any())
+            {
+                await _context.ProjectUsers.AddRangeAsync(newUsersToAdd);
+                await _context.SaveChangesAsync();
+            }
+
+            return new ServiceResponse<List<int>>(newUsersToAdd.Select(u => u.UserId).ToList());
         }
 
         //Delete project
