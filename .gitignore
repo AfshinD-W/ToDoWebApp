@@ -1,0 +1,17 @@
+bin/
+obj/
+
+*.user
+*.suo
+*.vs/
+.vscode/
+.idea/
+
+*.nupkg
+*.dll
+*.exe
+
+appsettings*.json
+
+.DS_Store
+Thumbs.db

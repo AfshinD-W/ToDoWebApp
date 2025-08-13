@@ -1,0 +1,6 @@
+@SSToDo_HostAddress = http://localhost:5144
+
+GET {{SSToDo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
