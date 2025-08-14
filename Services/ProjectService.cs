@@ -9,6 +9,7 @@ namespace SSToDo.Services
     public interface IProjectService
     {
         Task<ServiceResponse<List<Project>>> GetProjectsAsync();
+        Task<ServiceResponse<List<TodoTask>>> GetProjectTodoTasksAsync(int projectId);
         Task<ServiceResponse<ResponseProjectDto>> CreateProjectAsync(CreateProjectDto project);
         Task<ServiceResponse<ResponseProjectDto>> UpdateProjectAsync(UpdateProjectDto project, int projectId);
         Task<ServiceResponse<List<int>>> AddMemberToProjectAsync(List<int> memberIds, int projectId);
@@ -32,6 +33,17 @@ namespace SSToDo.Services
         {
             var projects = await _context.Projects.AsNoTracking().Where(u => u.ProjectUsers.Any(pu => pu.UserId == _userContextService.GetUserId())).ToListAsync();
             return new ServiceResponse<List<Project>>(projects);
+        }
+
+        //Get project todotasks
+        public async Task<ServiceResponse<List<TodoTask>>> GetProjectTodoTasksAsync(int projectId)
+        {
+            var projectTasks = await _context.TodoTasks.AsNoTracking()
+                .Where(t => t.ProjectId == projectId &&
+                        t.Project.ProjectUsers.Any(u => u.UserId == _userContextService.GetUserId()))
+                .ToListAsync();
+
+            return new ServiceResponse<List<TodoTask>>(projectTasks);
         }
 
         //Create project

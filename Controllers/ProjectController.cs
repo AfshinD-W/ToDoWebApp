@@ -17,11 +17,20 @@ namespace SSToDo.Controllers
             _projectService = projectService;
         }
 
-        //Get
         [HttpGet("get-projects")]
         public async Task<IActionResult> GetProjectsAsync()
         {
             var result = await _projectService.GetProjectsAsync();
+
+            if (result != null)
+                return Ok(result);
+            return BadRequest(new { message = "there is no project for you" });
+        }
+
+        [HttpGet("get-project-tasks/{projectId}")]
+        public async Task<IActionResult> GetProjectTodoTasksAsync(int projectId)
+        {
+            var result = await _projectService.GetProjectTodoTasksAsync(projectId);
 
             if (result != null)
                 return Ok(result);
