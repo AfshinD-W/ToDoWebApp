@@ -65,7 +65,20 @@ namespace SSToDo.Services
         //Update Todo
         public async Task<ServiceResponse<TodoTask>> UpdateTaskAsync(UpdateTodoTaskDto dto, int taskId)
         {
-            
+            var task = await _context.TodoTasks
+                .Include(t => t.Project)
+                    .ThenInclude(p => p.ProjectUsers)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+
+            if (task == null)
+                return new ServiceResponse<TodoTask>("Task not found");
+
+            var currentUserId = _userContextService.GetUserId();
+            var isAdmin = task.Project.ProjectUsers.Any(u => u.UserId == currentUserId && u.IsAdmin);
+
+            if (task.AssignedToUserId != currentUserId && !isAdmin)
+                return new ServiceResponse<TodoTask>("Only admin or assigned user can change the task.");
+
         }
 
         //Delete Todo
