@@ -12,6 +12,9 @@ namespace SSToDo.Models.EntityConfigurations
                 .WithMany()
                 .HasForeignKey(h => h.ChangedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(h => h.ChangedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
         }
     }
 }

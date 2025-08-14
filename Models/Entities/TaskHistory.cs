@@ -14,7 +14,6 @@ namespace SSToDo.Models.Entities
 
         public TaskStatusEnums OldStatus { get; set; }
         public TaskStatusEnums NewStatus { get; set; }
-        public TaskPriorityEnums Priority { get; set; }
 
         public DateTime ChangedAt { get; set; }
     }

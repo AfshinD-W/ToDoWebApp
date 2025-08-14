@@ -73,12 +73,87 @@ namespace SSToDo.Services
             if (task == null)
                 return new ServiceResponse<TodoTask>("Task not found");
 
-            var currentUserId = _userContextService.GetUserId();
-            var isAdmin = task.Project.ProjectUsers.Any(u => u.UserId == currentUserId && u.IsAdmin);
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var currentUserId = _userContextService.GetUserId();
+                var isAdmin = task.Project.ProjectUsers.Any(u => u.UserId == currentUserId && u.IsAdmin);
 
-            if (task.AssignedToUserId != currentUserId && !isAdmin)
-                return new ServiceResponse<TodoTask>("Only admin or assigned user can change the task.");
+                if (isAdmin)
+                {
+                    if (dto.AssignedToUserId.HasValue && dto.AssignedToUserId != task.AssignedToUserId)
+                    {
+                        var assignedUserIsMember = task.Project.ProjectUsers.Any(u => u.UserId == dto.AssignedToUserId);
 
+                        if (!assignedUserIsMember)
+                            return new ServiceResponse<TodoTask>("This user is not a member of this project.");
+
+                        task.AssignedToUserId = dto.AssignedToUserId;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(dto.Title) && dto.Title != task.Title)
+                        task.Title = dto.Title;
+
+                    if (!string.IsNullOrWhiteSpace(dto.Description) && dto.Description != task.Description)
+                        task.Description = dto.Description;
+
+                    if (dto.StartDate.HasValue && dto.StartDate.Value != task.StartDate)
+                        task.StartDate = dto.StartDate.Value;
+
+                    if (dto.DueDate.HasValue && dto.DueDate.Value != task.DueDate)
+                        task.DueDate = dto.DueDate.Value;
+
+                    if (dto.Priority.HasValue && dto.Priority != task.Priority)
+                        task.Priority = dto.Priority.Value;
+                }
+                else
+                {
+                    return new ServiceResponse<TodoTask>("Only admin can change this parameters.");
+                }
+
+                if (dto.Status.HasValue && dto.Status != task.Status)
+                {
+                    var oldStatus = task.Status;
+                    var taskHistory = await _context.TaskHistories.FirstOrDefaultAsync(h => h.TaskId == task.Id);
+
+                    if (!isAdmin && task.StartDate < DateTime.UtcNow)
+                        return new ServiceResponse<TodoTask>("Task time is over you cant change it now.");
+
+                    if(!isAdmin && task.Status == TaskStatusEnums.Approved)
+                        return new ServiceResponse<TodoTask>("Task is Approved.");
+
+                    task.Status = dto.Status.Value;
+
+                    if (taskHistory == null)
+                    {
+                        var newTaskHistory = new TaskHistory
+                        {
+                            TaskId = task.Id,
+                            ChangedByUserId = currentUserId,
+                            OldStatus = oldStatus,
+                            NewStatus = task.Status
+                        };
+
+                        await _context.TaskHistories.AddAsync(newTaskHistory);
+                    }
+                    else
+                    {
+                        taskHistory.OldStatus = oldStatus;
+                        taskHistory.NewStatus = task.Status;
+                    }
+
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new ServiceResponse<TodoTask>(task);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return new ServiceResponse<TodoTask>(ex.Message);
+            }
         }
 
         //Delete Todo
