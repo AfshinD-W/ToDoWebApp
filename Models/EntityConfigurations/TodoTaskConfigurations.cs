@@ -1,5 +1,4 @@
-﻿using System.Reflection.Emit;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SSToDo.Models.Entities;
 using SSToDo.Models.Enums;
@@ -28,6 +27,8 @@ namespace SSToDo.Models.EntityConfigurations
 
             builder.Property(t => t.Status)
                 .HasDefaultValue(TaskStatusEnums.Open);
+
+            builder.Property(t => t.StartDate).HasDefaultValueSql("GETUTCDATE()");
 
             builder.Property(t => t.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
         }
