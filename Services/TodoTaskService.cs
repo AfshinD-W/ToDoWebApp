@@ -35,7 +35,7 @@ namespace SSToDo.Services
                 .ToListAsync();
 
             var currentUserMembership = projectMembers.FirstOrDefault(u => u.UserId == _userContextService.GetUserId());
-            var taskStatus = TaskStatusEnums.Open;
+            var taskStatus = dto.AssignedToUserId.HasValue ? TaskStatusEnums.Pending : TaskStatusEnums.Open;
 
             if (currentUserMembership == null)
                 return new ServiceResponse<TodoTask>("You are not a member of this project.");
@@ -45,9 +45,6 @@ namespace SSToDo.Services
 
             if (dto.AssignedToUserId.HasValue && !projectMembers.Any(u => u.UserId == dto.AssignedToUserId.Value))
                 return new ServiceResponse<TodoTask>("Assigned user is not a member of this project.");
-
-            if (dto.AssignedToUserId.HasValue)
-                taskStatus = TaskStatusEnums.Pending;
 
             var todoTask = new TodoTask
             {

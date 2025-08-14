@@ -47,7 +47,7 @@ namespace SSToDo.Controllers
             return Ok(result);
         }
 
-        [HttpPost("update-project/{projectId}")]
+        [HttpPut("update-project/{projectId}")]
         public async Task<IActionResult> UpdateProjectAsync([FromBody] UpdateProjectDto dto, int projectId)
         {
             var result = await _projectService.UpdateProjectAsync(dto, projectId);
