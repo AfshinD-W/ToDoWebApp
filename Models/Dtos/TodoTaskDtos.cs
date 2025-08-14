@@ -9,6 +9,7 @@ namespace SSToDo.Models.Dtos
         public int? AssignedToUserId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime DueDate { get; set; }
+        public TaskPriorityEnums Priority { get; set; }
     }
 
     public class UpdateTodoTaskDto
@@ -19,6 +20,7 @@ namespace SSToDo.Models.Dtos
         public DateTime? StartDate { get; set; }
         public DateTime? DueDate { get; set; }
         public TaskStatusEnums? Status { get; set; }
+        public TaskPriorityEnums? Priority { get; set; }
     }
 
     public class ResponseTodoTaskDto

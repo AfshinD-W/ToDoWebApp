@@ -28,6 +28,9 @@ namespace SSToDo.Models.EntityConfigurations
             builder.Property(t => t.Status)
                 .HasDefaultValue(TaskStatusEnums.Open);
 
+            builder.Property(t => t.Project)
+                .HasDefaultValue(TaskPriorityEnums.low);
+
             builder.Property(t => t.StartDate).HasDefaultValueSql("GETUTCDATE()");
 
             builder.Property(t => t.CreatedAt).HasDefaultValueSql("GETUTCDATE()");

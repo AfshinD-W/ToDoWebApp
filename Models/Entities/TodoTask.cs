@@ -20,6 +20,7 @@ namespace SSToDo.Models.Entities
         public DateTime DueDate { get; set; }
 
         public TaskStatusEnums Status { get; set; }
+        public TaskPriorityEnums Priority { get; set; }
 
         public DateTime CreatedAt { get; set; }
     }
