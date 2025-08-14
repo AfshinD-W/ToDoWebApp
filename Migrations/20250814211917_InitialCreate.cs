@@ -35,8 +35,8 @@ namespace SSToDo.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Unknown project"),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false, defaultValue: "Unknown project"),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedByUserId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
@@ -86,9 +86,10 @@ namespace SSToDo.Migrations
                     Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
                     AssignedToUserId = table.Column<int>(type: "int", nullable: true),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    Priority = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
                 constraints: table =>
@@ -119,7 +120,7 @@ namespace SSToDo.Migrations
                     ChangedByUserId = table.Column<int>(type: "int", nullable: false),
                     OldStatus = table.Column<int>(type: "int", nullable: false),
                     NewStatus = table.Column<int>(type: "int", nullable: false),
-                    ChangedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ChangedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
                 constraints: table =>
                 {

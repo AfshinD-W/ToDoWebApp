@@ -12,7 +12,7 @@ using SSToDo.Data;
 namespace SSToDo.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250811192611_InitialCreate")]
+    [Migration("20250814211917_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -42,14 +42,13 @@ namespace SSToDo.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
                         .HasDefaultValue("Unknown project");
 
                     b.HasKey("Id");
@@ -88,7 +87,9 @@ namespace SSToDo.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<int>("ChangedByUserId")
                         .HasColumnType("int");
@@ -137,11 +138,18 @@ namespace SSToDo.Migrations
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Priority")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
