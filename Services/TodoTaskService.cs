@@ -9,9 +9,9 @@ namespace SSToDo.Services
 {
     public interface ITodoTaskService
     {
-        Task<ServiceResponse<TodoTask>> CreateTodoTasksAsync(CreateTodoTaskDto dto, int projectId);
-        Task<ServiceResponse<TodoTask>> UpdateTasksAsync();
-        Task<ServiceResponse<TodoTask>> DeleteTodoTasksAsync();
+        Task<ServiceResponse<TodoTask>> CreateTodoTaskAsync(CreateTodoTaskDto dto, int projectId);
+        Task<ServiceResponse<TodoTask>> UpdateTaskAsync(UpdateTodoTaskDto dto, int taskId);
+        Task<ServiceResponse<TodoTask>> DeleteTodoTaskAsync();
 
     }
 
@@ -27,7 +27,7 @@ namespace SSToDo.Services
         }
 
         //Create Todo
-        public async Task<ServiceResponse<TodoTask>> CreateTodoTasksAsync(CreateTodoTaskDto dto, int projectId)
+        public async Task<ServiceResponse<TodoTask>> CreateTodoTaskAsync(CreateTodoTaskDto dto, int projectId)
         {
             var projectMembers = await _context.ProjectUsers
                 .Where(u => u.ProjectId == projectId)
@@ -63,13 +63,13 @@ namespace SSToDo.Services
         }
 
         //Update Todo
-        public async Task<ServiceResponse<TodoTask>> DeleteTodoTasksAsync()
+        public async Task<ServiceResponse<TodoTask>> UpdateTaskAsync(UpdateTodoTaskDto dto, int taskId)
         {
-            throw new NotImplementedException();
+            
         }
 
         //Delete Todo
-        public async Task<ServiceResponse<TodoTask>> UpdateTasksAsync()
+        public async Task<ServiceResponse<TodoTask>> DeleteTodoTaskAsync()
         {
             throw new NotImplementedException();
         }

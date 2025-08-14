@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
-using SSToDo.Models.Enums;
+﻿using SSToDo.Models.Enums;
 
 namespace SSToDo.Models.Dtos
 {
@@ -10,6 +9,16 @@ namespace SSToDo.Models.Dtos
         public int? AssignedToUserId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime DueDate { get; set; }
+    }
+
+    public class UpdateTodoTaskDto
+    {
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public int? AssignedToUserId { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? DueDate { get; set; }
+        public TaskStatusEnums? Status { get; set; }
     }
 
     public class ResponseTodoTaskDto
