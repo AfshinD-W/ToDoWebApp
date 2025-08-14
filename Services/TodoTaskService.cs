@@ -11,7 +11,7 @@ namespace SSToDo.Services
     {
         Task<ServiceResponse<TodoTask>> CreateTodoTaskAsync(CreateTodoTaskDto dto, int projectId);
         Task<ServiceResponse<TodoTask>> UpdateTaskAsync(UpdateTodoTaskDto dto, int taskId);
-        Task<ServiceResponse<TodoTask>> DeleteTodoTaskAsync();
+        Task<ServiceResponse<string>> DeleteTodoTaskAsync(int taskId);
 
     }
 
@@ -126,6 +126,9 @@ namespace SSToDo.Services
                     if (!isAdmin && task.Status == TaskStatusEnums.Approved)
                         return new ServiceResponse<TodoTask>("Task is Approved.");
 
+                    if (!isAdmin && task.Status != TaskStatusEnums.Submitted)
+                        return new ServiceResponse<TodoTask>("You just can submit the task.");
+
                     task.Status = dto.Status.Value;
 
                     if (taskHistory == null)
@@ -161,9 +164,26 @@ namespace SSToDo.Services
         }
 
         //Delete Todo
-        public async Task<ServiceResponse<TodoTask>> DeleteTodoTaskAsync()
+        public async Task<ServiceResponse<string>> DeleteTodoTaskAsync(int taskId)
         {
-            throw new NotImplementedException();
+            var task = await _context.TodoTasks
+                .Include(t => t.Project)
+                    .ThenInclude(p => p.ProjectUsers)
+                .FirstOrDefaultAsync(t => t.Id == taskId);
+
+            if (task == null)
+                return new ServiceResponse<string>("There is no task with this ID.");
+
+            var currentUser = task.Project.ProjectUsers.Any(u => u.UserId == _userContextService.GetUserId() && u.IsAdmin);
+
+            if (!currentUser)
+                return new ServiceResponse<string>("Only Admin can delete tasks.");
+
+            _context.TodoTasks.Remove(task);
+            await _context.SaveChangesAsync();
+
+            return new ServiceResponse<string>("Task deleted successfully.")
+            { Data = "Task deleted successfully." };
         }
     }
 }
