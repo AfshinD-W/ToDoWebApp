@@ -29,15 +29,21 @@ namespace SSToDo.Services
         //Create Todo
         public async Task<ServiceResponse<TodoTask>> CreateTodoTasksAsync(CreateTodoTaskDto dto, int projectId)
         {
-            var membership = await _context.ProjectUsers
-                .Where(u => u.ProjectId == projectId && u.UserId == _userContextService.GetUserId())
-                .FirstOrDefaultAsync();
+            var projectMembers = await _context.ProjectUsers
+                .Where(u => u.ProjectId == projectId)
+                .Select(u => new { u.UserId, u.IsAdmin })
+                .ToListAsync();
 
-            if (membership == null)
+            var currentUserMembership = projectMembers.FirstOrDefault(u => u.UserId == _userContextService.GetUserId());
+
+            if (currentUserMembership == null)
                 return new ServiceResponse<TodoTask>("You are not a member of this project.");
 
-            if (!membership.IsAdmin)
+            if (!currentUserMembership.IsAdmin)
                 return new ServiceResponse<TodoTask>("Only admin of project can create task for it.");
+
+            if (dto.AssignedToUserId.HasValue && !projectMembers.Any(u => u.UserId == dto.AssignedToUserId.Value))
+                return new ServiceResponse<TodoTask>("Assigned user is not a member of this project.");
 
             var todoTask = new TodoTask
             {
