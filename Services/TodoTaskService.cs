@@ -118,7 +118,15 @@ namespace SSToDo.Services
                     var taskHistory = await _context.TaskHistories.FirstOrDefaultAsync(h => h.TaskId == task.Id);
 
                     if (!isAdmin && task.DueDate < DateTime.UtcNow)
+                    {
+                        if (task.Status != TaskStatusEnums.Expired)
+                        {
+                            task.Status = TaskStatusEnums.Expired;
+                            await _context.SaveChangesAsync();
+                        }
+
                         return new ServiceResponse<TodoTask>("Task time is over you cant change it now.");
+                    }
 
                     if (!isAdmin && task.Status == TaskStatusEnums.Approved)
                         return new ServiceResponse<TodoTask>("Task is Approved.");
