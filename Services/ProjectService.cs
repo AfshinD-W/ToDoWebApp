@@ -2,6 +2,7 @@
 using SSToDo.Data;
 using SSToDo.Models.Dtos;
 using SSToDo.Models.Entities;
+using SSToDo.Models.Enums;
 using SSToDo.Utilities;
 
 namespace SSToDo.Services
@@ -38,10 +39,24 @@ namespace SSToDo.Services
         //Get project todotasks
         public async Task<ServiceResponse<List<TodoTask>>> GetProjectTodoTasksAsync(int projectId)
         {
-            var projectTasks = await _context.TodoTasks.AsNoTracking()
+            var projectTasks = await _context.TodoTasks
                 .Where(t => t.ProjectId == projectId &&
                         t.Project.ProjectUsers.Any(u => u.UserId == _userContextService.GetUserId()))
                 .ToListAsync();
+
+            int expierdTaskNum = 0;
+
+            foreach (var todoTask in projectTasks)
+            {
+                if (todoTask.DueDate < DateTime.UtcNow && todoTask.Status != TaskStatusEnums.Expired)
+                {
+                    todoTask.Status = TaskStatusEnums.Expired;
+                    expierdTaskNum++;
+                }
+            }
+
+            if (expierdTaskNum > 0)
+                await _context.SaveChangesAsync();
 
             return new ServiceResponse<List<TodoTask>>(projectTasks);
         }
