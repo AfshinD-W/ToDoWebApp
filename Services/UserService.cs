@@ -16,16 +16,20 @@ namespace SSToDo.Services
     {
         private readonly AppDbContext _context;
         private readonly IHashPasswordService _hashPasswordService;
+        private readonly IFileService _fileService;
+        private readonly static string _imageFolderForUser = "TodoProfileImage";
 
-        public UserService(AppDbContext context, IHashPasswordService hashPasswordService)
+        public UserService(AppDbContext context, IHashPasswordService hashPasswordService, IFileService fileService)
         {
             _context = context;
             _hashPasswordService = hashPasswordService;
+            _fileService = fileService;
         }
 
         public async Task<ServiceResponse<ResponseUserDtos>> CreateUserAsync(CreateUserDtos dto)
         {
             var existsUserEmail = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+            string? imagePath = dto.Image != null ? await _fileService.AddImageAsync(dto.Image, _imageFolderForUser) : null ;
 
             if (existsUserEmail)
                 return new ServiceResponse<ResponseUserDtos>("There is an user with this email allready");
@@ -36,7 +40,7 @@ namespace SSToDo.Services
                 Email = dto.Email,
                 Password = _hashPasswordService.Hash(dto.Password),
                 Age = dto.Age,
-                ImagePath = dto.ImagePath
+                ImagePath = imagePath
             };
 
             await _context.Users.AddAsync(newUser);

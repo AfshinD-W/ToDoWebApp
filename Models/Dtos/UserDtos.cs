@@ -6,7 +6,7 @@
         public string Email { get; set; }
         public string Password { get; set; }
         public int? Age { get; set; }
-        public string? ImagePath { get; set; }
+        public IFormFile? Image { get; set; }
     }
 
     public class ResponseUserDtos
