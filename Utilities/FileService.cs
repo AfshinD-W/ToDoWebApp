@@ -1,8 +1,13 @@
 ﻿namespace SSToDo.Utilities
 {
+    public interface IFileService
+    {
+        Task<string> AddImageAsync(IFormFile file, string folderName);
+    }
+
     public class FileService
     {
-        private static readonly HashSet<string> _permittedExtensions = new(){
+        private static readonly HashSet<string> _permittedExtensionsForImage = new(){
         ".jpg", ".jpeg", ".png" , "tiff" , "webp" , "heic" , "ico"
         };
 
@@ -16,7 +21,7 @@
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
-            if (string.IsNullOrEmpty(extension) || !_permittedExtensions.Contains(extension))
+            if (string.IsNullOrEmpty(extension) || !_permittedExtensionsForImage.Contains(extension))
                 return "Unsupported file type.";
 
             var uploadFolder = Path.Combine($"F:\\FTProot\\Afshin\\{folderName}");
