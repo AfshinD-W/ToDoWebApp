@@ -8,12 +8,16 @@ using Microsoft.OpenApi.Models;
 using SSToDo.Data;
 using SSToDo.Models.DtoValidator;
 using SSToDo.Services;
+using SSToDo.Shared;
 using SSToDo.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add Database
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add emaile service configuration
+builder.Services.Configure<EmaileSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // Add services to the container.
 builder.Services.AddScoped<IProjectService, ProjectService>();
