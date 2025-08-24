@@ -9,7 +9,6 @@ namespace SSToDo.Shared
         Task SendEmailAsync(string toEmail, string subject, string body);
     }
 
-
     public class EmailService : IEmailService
     {
         private readonly EmaileSettings _emailSettings;
