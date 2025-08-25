@@ -26,7 +26,7 @@ namespace SSToDo.Models.EntityConfigurations
 
             builder.Property(i => i.InviteToken).HasMaxLength(200);
 
-            builder.Property(i => i.Status).HasDefaultValue(TaskStatusEnums.Pending);
+            builder.Property(i => i.Status).HasDefaultValue(InviteStatus.Pending);
 
             builder.Property(i => i.CreateAt).HasDefaultValueSql("GETUTCDATE()");
             builder.Property(i => i.ExpiresAt).HasDefaultValueSql("DATEADD(day, 1, GETUTCDATE())");
