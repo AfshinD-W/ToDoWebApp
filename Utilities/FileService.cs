@@ -5,7 +5,7 @@
         Task<string> AddImageAsync(IFormFile file, string folderName);
     }
 
-    public class FileService
+    public class FileService : IFileService
     {
         private static readonly HashSet<string> _permittedExtensionsForImage = new(){
         ".jpg", ".jpeg", ".png" , "tiff" , "webp" , "heic" , "ico"

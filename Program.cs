@@ -23,6 +23,8 @@ builder.Services.Configure<EmaileSettings>(builder.Configuration.GetSection("Ema
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IHashPasswordService, HashPasswordService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Add httpContextAccessor
 builder.Services.AddHttpContextAccessor();
