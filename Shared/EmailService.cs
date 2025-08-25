@@ -31,6 +31,7 @@ namespace SSToDo.Shared
             using var mailMessage = new MailMessage
             {
                 From = fromAddress,
+                Subject = subject,
                 Body = BuildEmailTemplate(subject, body),
                 IsBodyHtml = true
             };
