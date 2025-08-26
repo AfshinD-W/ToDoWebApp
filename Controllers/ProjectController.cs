@@ -58,9 +58,9 @@ namespace SSToDo.Controllers
         }
 
         [HttpPost("add-members/{projectId}")]
-        public async Task<IActionResult> AddMemberToProjectAsync([FromBody] List<int> memberIds, int projectId)
+        public async Task<IActionResult> InviteMemberToProjectAsync([FromBody] List<int> memberIds, int projectId)
         {
-            var result = await _projectService.AddMemberToProjectAsync(memberIds, projectId);
+            var result = await _projectService.InviteMemberToProjectAsync(memberIds, projectId);
 
             if (result.Data == null)
                 return BadRequest(result.Message);

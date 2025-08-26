@@ -6,7 +6,7 @@ namespace SSToDo.Shared
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(string toEmail, string subject, string body);
+        Task SendEmailAsync(string toEmail, string subject, string body, string? link);
     }
 
     public class EmailService : IEmailService
@@ -17,7 +17,7 @@ namespace SSToDo.Shared
             _emailSettings = emailSettings.Value;
         }
 
-        public async Task SendEmailAsync(string toEmail, string subject, string body)
+        public async Task SendEmailAsync(string toEmail, string subject, string body, string? link)
         {
             var fromAddress = new MailAddress(_emailSettings.FromAddress, _emailSettings.FromName);
             using var smtp = new SmtpClient
@@ -32,7 +32,7 @@ namespace SSToDo.Shared
             {
                 From = fromAddress,
                 Subject = subject,
-                Body = BuildEmailTemplate(subject, body),
+                Body = BuildEmailTemplate(subject, body, link),
                 IsBodyHtml = true
             };
 
@@ -41,7 +41,7 @@ namespace SSToDo.Shared
             await smtp.SendMailAsync(mailMessage);
         }
 
-        private string BuildEmailTemplate(string title, string content)
+        private string BuildEmailTemplate(string title, string content, string? link)
         {
             return $@"
         <!DOCTYPE html>
@@ -99,7 +99,7 @@ namespace SSToDo.Shared
             <div class='content'>
                 {content}
                 <br/>
-                <a href='#' class='btn'>Confirm</a>
+                <a href='{link}' class='btn'>Confirm</a>
             </div>
             <div class='footer'>
                 &copy; {DateTime.UtcNow.Year} SSToDo. All rights reserved.

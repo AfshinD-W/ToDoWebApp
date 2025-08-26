@@ -10,6 +10,7 @@ namespace SSToDo.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Project> Projects { get; set; }
+        public DbSet<ProjectUserInvite> ProjectUsersInvite { get; set; }
         public DbSet<ProjectUser> ProjectUsers { get; set; }
         public DbSet<TodoTask> TodoTasks { get; set; }
         public DbSet<TaskHistory> TaskHistories { get; set; }

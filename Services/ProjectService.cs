@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Runtime;
+using Microsoft.EntityFrameworkCore;
 using SSToDo.Data;
 using SSToDo.Models.Dtos;
 using SSToDo.Models.Entities;
 using SSToDo.Models.Enums;
+using SSToDo.Shared;
 using SSToDo.Utilities;
 
 namespace SSToDo.Services
@@ -13,7 +15,7 @@ namespace SSToDo.Services
         Task<ServiceResponse<List<TodoTask>>> GetProjectTodoTasksAsync(int projectId);
         Task<ServiceResponse<ResponseProjectDto>> CreateProjectAsync(CreateProjectDto project);
         Task<ServiceResponse<ResponseProjectDto>> UpdateProjectAsync(UpdateProjectDto project, int projectId);
-        Task<ServiceResponse<List<int>>> AddMemberToProjectAsync(List<int> memberIds, int projectId);
+        Task<ServiceResponse<List<int>>> InviteMemberToProjectAsync(List<int> memberIds, int projectId);
         Task<ServiceResponse<string>> RemoveMemberFromProjectAsync(List<int> memberIds, int projectId);
         Task<ServiceResponse<string>> DeleteProjectAsync(int projectId);
     }
@@ -22,11 +24,17 @@ namespace SSToDo.Services
     {
         private readonly AppDbContext _context;
         private readonly IUserContextService _userContextService;
+        private readonly IHashPasswordService _hashPasswordService;
+        private readonly IEmailService _emaileService;
+        private readonly IConfiguration _configuration;
 
-        public ProjectService(AppDbContext context, IUserContextService userContextService)
+        public ProjectService(AppDbContext context, IUserContextService userContextService, IHashPasswordService hashPasswordService, IEmailService emailService, IConfiguration configuration)
         {
             _context = context;
             _userContextService = userContextService;
+            _hashPasswordService = hashPasswordService;
+            _emaileService = emailService;
+            _configuration = configuration;
         }
 
         //Get projects
@@ -134,10 +142,10 @@ namespace SSToDo.Services
             return new ServiceResponse<ResponseProjectDto>(responseDto);
         }
 
-        //Add member to project
-        public async Task<ServiceResponse<List<int>>> AddMemberToProjectAsync(List<int> memberIds, int projectId)
+        //Send emaile to members to add them to project
+        public async Task<ServiceResponse<List<int>>> InviteMemberToProjectAsync(List<int> memberIds, int projectId)
         {
-            if (memberIds == null || projectId == null)
+            if (memberIds == null)
                 return new ServiceResponse<List<int>>("Invalid inputs");
 
             var project = await _context.Projects
@@ -155,21 +163,33 @@ namespace SSToDo.Services
             if (!project.IsAdmin)
                 return new ServiceResponse<List<int>>("You are not the admin");
 
-            var newUsersToAdd = new List<ProjectUser>();
+            var newUsersToAdd = new List<ProjectUserInvite>();
+            var membersEmailes = await _context.Users.AsNoTracking().Where(u => memberIds.Contains(u.Id)).Select(u => new { u.Id, u.Email }).ToListAsync();
 
             foreach (var userId in memberIds)
             {
                 if (!project.ExistingUserIds.Contains(userId))
-                    newUsersToAdd.Add(new ProjectUser
+                {
+                    var inviteToken = _hashPasswordService.Hash(Guid.NewGuid().ToString());
+                    var memberEmaile = membersEmailes.Where(u => u.Id == userId).Select(e => e.Email).FirstOrDefault();
+                    newUsersToAdd.Add(new ProjectUserInvite
                     {
                         ProjectId = projectId,
-                        UserId = userId
+                        UserId = userId,
+                        InviteToken = inviteToken
                     });
+
+                    await _emaileService.SendEmailAsync(memberEmaile, $"Project Invitation - {project.Project.Title}"
+                        , $"You have been invited to join the project **{project.Project.Title}**.\n " +
+                            $"If you would like to accept this invitation, please click the confirm.\n " +
+                            $"If you did not expect this invitation, you can safely ignore this email." 
+                        , $"{_configuration.GetSection("ApplicationSettings:BaseUrl")}/invite/accept?token={inviteToken}");
+                }
             }
 
             if (newUsersToAdd.Any())
             {
-                await _context.ProjectUsers.AddRangeAsync(newUsersToAdd);
+                await _context.ProjectUsersInvite.AddRangeAsync(newUsersToAdd);
                 await _context.SaveChangesAsync();
             }
 
