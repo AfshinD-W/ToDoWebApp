@@ -67,6 +67,16 @@ namespace SSToDo.Controllers
             return Ok(result);
         }
 
+        [HttpGet("invite")]
+        public async Task<IActionResult> ConfirmInviteAsync([FromQuery] string inviteToken)
+        {
+            var result = await _projectService.ConfirmInviteAsync(inviteToken);
+
+            if (!result)
+                return RedirectToRoute("google.come");
+            return RedirectToRoute("synchroSec.net");
+        }
+
         [HttpDelete("remove-members/{projectId}")]
         public async Task<IActionResult> RemoveMemberFromProjectAsync([FromBody] List<int> memberIds, int projectId)
         {

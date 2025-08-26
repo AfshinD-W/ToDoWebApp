@@ -1,5 +1,4 @@
-﻿using System.Runtime;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SSToDo.Data;
 using SSToDo.Models.Dtos;
 using SSToDo.Models.Entities;
@@ -16,6 +15,7 @@ namespace SSToDo.Services
         Task<ServiceResponse<ResponseProjectDto>> CreateProjectAsync(CreateProjectDto project);
         Task<ServiceResponse<ResponseProjectDto>> UpdateProjectAsync(UpdateProjectDto project, int projectId);
         Task<ServiceResponse<List<int>>> InviteMemberToProjectAsync(List<int> memberIds, int projectId);
+        Task<bool> ConfirmInviteAsync(string inviteToken);
         Task<ServiceResponse<string>> RemoveMemberFromProjectAsync(List<int> memberIds, int projectId);
         Task<ServiceResponse<string>> DeleteProjectAsync(int projectId);
     }
@@ -32,7 +32,6 @@ namespace SSToDo.Services
         {
             _context = context;
             _userContextService = userContextService;
-            _hashPasswordService = hashPasswordService;
             _emaileService = emailService;
             _configuration = configuration;
         }
@@ -170,7 +169,7 @@ namespace SSToDo.Services
             {
                 if (!project.ExistingUserIds.Contains(userId))
                 {
-                    var inviteToken = _hashPasswordService.Hash(Guid.NewGuid().ToString());
+                    var inviteToken = Guid.NewGuid().ToString();
                     var memberEmaile = membersEmailes.Where(u => u.Id == userId).Select(e => e.Email).FirstOrDefault();
                     newUsersToAdd.Add(new ProjectUserInvite
                     {
@@ -182,8 +181,8 @@ namespace SSToDo.Services
                     await _emaileService.SendEmailAsync(memberEmaile, $"Project Invitation - {project.Project.Title}"
                         , $"You have been invited to join the project **{project.Project.Title}**.\n " +
                             $"If you would like to accept this invitation, please click the confirm.\n " +
-                            $"If you did not expect this invitation, you can safely ignore this email." 
-                        , $"{_configuration.GetSection("ApplicationSettings:BaseUrl")}/invite/accept?token={inviteToken}");
+                            $"If you did not expect this invitation, you can safely ignore this email."
+                        , $"{_configuration.GetSection("ApplicationSettings:BaseUrl")}/api/Project/invite?token={inviteToken}");
                 }
             }
 
@@ -194,6 +193,34 @@ namespace SSToDo.Services
             }
 
             return new ServiceResponse<List<int>>(newUsersToAdd.Select(u => u.UserId).ToList());
+        }
+
+        public async Task<bool> ConfirmInviteAsync(string inviteToken)
+        {
+            var invite = await _context.ProjectUsersInvite.FirstOrDefaultAsync(i => i.InviteToken == inviteToken);
+
+            if (invite == null)
+                return false;
+
+            if (invite.Status != InviteStatus.Pending)
+                return false;
+
+            var alreadyExists = await _context.ProjectUsers.AsNoTracking()
+            .AnyAsync(pu => pu.ProjectId == invite.ProjectId && pu.UserId == invite.UserId);
+
+            if (alreadyExists)
+                return false;
+
+            invite.Status = InviteStatus.Accepted;
+
+            var newProjectUser = new ProjectUser
+            {
+                ProjectId = invite.ProjectId,
+                UserId = invite.UserId,
+            };
+
+            await _context.ProjectUsers.AddAsync(newProjectUser);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         //Remove member from project
