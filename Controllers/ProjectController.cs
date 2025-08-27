@@ -73,8 +73,8 @@ namespace SSToDo.Controllers
             var result = await _projectService.ConfirmInviteAsync(inviteToken);
 
             if (!result)
-                return RedirectToRoute("google.come");
-            return RedirectToRoute("synchroSec.net");
+                return Redirect("/invites/success.html");
+            return Redirect("/invites/failed.html");
         }
 
         [HttpDelete("remove-members/{projectId}")]
