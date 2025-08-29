@@ -68,7 +68,8 @@ namespace SSToDo.Controllers
         }
 
         [HttpGet("invite")]
-        public async Task<IActionResult> ConfirmInviteAsync([FromQuery] string inviteToken)
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmInviteAsync([FromQuery(Name = "token")] string inviteToken)
         {
             var result = await _projectService.ConfirmInviteAsync(inviteToken);
 

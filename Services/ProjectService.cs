@@ -168,7 +168,9 @@ namespace SSToDo.Services
 
             foreach (var userId in memberIds)
             {
-                if (!project.ExistingUserIds.Contains(userId))
+                var hasActiveInvited = await _context.ProjectUsersInvite.AsNoTracking().Where(i => i.ProjectId == projectId && i.UserId == userId && i.ExpiresAt > DateTime.UtcNow).FirstOrDefaultAsync();
+
+                if (!project.ExistingUserIds.Contains(userId) && hasActiveInvited == null)
                 {
                     var inviteToken = Guid.NewGuid().ToString();
                     var memberEmaile = membersEmailes.Where(u => u.Id == userId).Select(e => e.Email).FirstOrDefault();
@@ -184,7 +186,7 @@ namespace SSToDo.Services
                         , $"You have been invited to join the project **{project.Project.Title}**.\n " +
                             $"If you would like to accept this invitation, please click the confirm.\n " +
                             $"If you did not expect this invitation, you can safely ignore this email."
-                        , $"{_configuration.GetSection("ApplicationSettings:BaseUrl")}/api/Project/invite?token={inviteToken}");
+                        , $"{_configuration["ApplicationSettings:BaseUrl"]}/api/Project/invite?token={inviteToken}");
                 }
             }
 
