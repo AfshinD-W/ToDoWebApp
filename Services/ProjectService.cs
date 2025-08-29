@@ -165,12 +165,14 @@ namespace SSToDo.Services
             var newUsersToAdd = new List<ProjectUserInvite>();
             var membersEmailes = await _context.Users.AsNoTracking().Where(u => memberIds.Contains(u.Id)).Select(u => new { u.Id, u.Email }).ToListAsync();
 
+
             foreach (var userId in memberIds)
             {
                 if (!project.ExistingUserIds.Contains(userId))
                 {
                     var inviteToken = Guid.NewGuid().ToString();
                     var memberEmaile = membersEmailes.Where(u => u.Id == userId).Select(e => e.Email).FirstOrDefault();
+
                     newUsersToAdd.Add(new ProjectUserInvite
                     {
                         ProjectId = projectId,
@@ -195,6 +197,7 @@ namespace SSToDo.Services
             return new ServiceResponse<List<int>>(newUsersToAdd.Select(u => u.UserId).ToList());
         }
 
+        //Confirm accept and add member to project
         public async Task<bool> ConfirmInviteAsync(string inviteToken)
         {
             var invite = await _context.ProjectUsersInvite.FirstOrDefaultAsync(i => i.InviteToken == inviteToken);

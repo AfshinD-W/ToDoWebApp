@@ -73,8 +73,8 @@ namespace SSToDo.Controllers
             var result = await _projectService.ConfirmInviteAsync(inviteToken);
 
             if (!result)
-                return Redirect("/invites/success.html");
-            return Redirect("/invites/failed.html");
+                return Redirect("/invites/failed.html");
+            return Redirect("/invites/success.html");
         }
 
         [HttpDelete("remove-members/{projectId}")]

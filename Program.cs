@@ -3,6 +3,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SSToDo.Data;
@@ -13,6 +14,10 @@ using SSToDo.Shared;
 using SSToDo.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddFile("Logs/app-{Date}.txt"); 
 
 // Add Database
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -92,15 +97,15 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
     app.UseDeveloperExceptionPage(new DeveloperExceptionPageOptions
     {
         SourceCodeLineCount = 2,
     });
-}
+//}
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
@@ -111,6 +116,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.Run();
