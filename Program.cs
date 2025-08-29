@@ -3,7 +3,6 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using SSToDo.Data;
@@ -17,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-builder.Logging.AddFile("Logs/app-{Date}.txt"); 
+builder.Logging.AddFile("Logs/app-{Date}.txt");
 
 // Add Database
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -31,6 +30,7 @@ builder.Services.AddScoped<IHashPasswordService, HashPasswordService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<ITodoTaskService, TodoTaskService>();
 
 // Add httpContextAccessor
 builder.Services.AddHttpContextAccessor();
@@ -99,12 +99,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.UseDeveloperExceptionPage(new DeveloperExceptionPageOptions
-    {
-        SourceCodeLineCount = 2,
-    });
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseDeveloperExceptionPage(new DeveloperExceptionPageOptions
+{
+    SourceCodeLineCount = 2,
+});
 //}
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
