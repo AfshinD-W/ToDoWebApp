@@ -161,6 +161,8 @@
             transform: translateY(0);
             transition: var(--transition);
             animation: cardEntrance 0.8s ease-out forwards;
+            z-index: 10;
+            position: relative;
         }
 
             .card:hover {
@@ -271,21 +273,25 @@
 
         .confetti {
             position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f0f;
+            width: 12px;
+            height: 12px;
             opacity: 0.7;
             animation: confettiFall 5s linear infinite;
+            z-index: 1;
         }
 
         @keyframes confettiFall {
             0% {
-                transform: translateY(-100px) rotate(0deg);
+                transform: translateY(-100px) translateX(0) rotate(0deg);
                 opacity: 1;
             }
 
+            80% {
+                opacity: 0.7;
+            }
+
             100% {
-                transform: translateY(1000px) rotate(720deg);
+                transform: translateY(1000px) translateX(20px) rotate(720deg);
                 opacity: 0;
             }
         }
@@ -358,6 +364,8 @@
             margin-top: 40px;
             font-size: 0.9rem;
             opacity: 0.7;
+            z-index: 10;
+            position: relative;
         }
 
         /* Responsive design */
@@ -432,24 +440,38 @@
     </div>
 
     <footer>
-        <p>&copy; 2023 Company Name. All rights reserved.</p>
+        <p>&copy; 2025 SynchroSecurity. All rights reserved.</p>
     </footer>
 
     <script>
         // Create confetti elements
         function createConfetti() {
-            const colors = ['#2ecc71', '#1E90FF', '#ff4757', '#ffa502', '#dfe4ea'];
+            const colors = ['#2ecc71', '#1E90FF', '#ff4757', '#ffa502', '#dfe4ea', '#ffffff'];
             const container = document.body;
+            const confettiCount = 60;
 
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < confettiCount; i++) {
                 const confetti = document.createElement('div');
                 confetti.className = 'confetti';
+
+                // Position from top of screen (above the viewport)
                 confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.width = Math.random() * 10 + 5 + 'px';
-                confetti.style.height = Math.random() * 10 + 5 + 'px';
+
+                // Random size
+                const size = Math.random() * 8 + 8;
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+
+                // Random color
                 confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.animationDelay = Math.random() * 5 + 's';
-                confetti.style.animationDuration = Math.random() * 3 + 3 + 's';
+
+                // Random rotation
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+                // Random animation delay and duration
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationDuration = Math.random() * 3 + 4 + 's';
+
                 container.appendChild(confetti);
             }
         }
@@ -459,14 +481,16 @@
 
         // Add subtle animation to checkmark on hover
         const checkmark = document.querySelector('.checkmark');
-        checkmark.addEventListener('mouseover', () => {
-            checkmark.style.transition = 'transform 0.3s ease';
-            checkmark.style.transform = 'scale(1.1)';
-        });
+        if (checkmark) {
+            checkmark.addEventListener('mouseover', () => {
+                checkmark.style.transition = 'transform 0.3s ease';
+                checkmark.style.transform = 'scale(1.1)';
+            });
 
-        checkmark.addEventListener('mouseout', () => {
-            checkmark.style.transform = 'scale(1)';
-        });
+            checkmark.addEventListener('mouseout', () => {
+                checkmark.style.transform = 'scale(1)';
+            });
+        }
     </script>
 </body>
 </html>
