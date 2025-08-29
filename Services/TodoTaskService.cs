@@ -18,9 +18,9 @@ namespace SSToDo.Services
     public class TodoTaskService : ITodoTaskService
     {
         private readonly AppDbContext _context;
-        private readonly UserContextService _userContextService;
+        private readonly IUserContextService _userContextService;
 
-        public TodoTaskService(AppDbContext context, UserContextService userContextService)
+        public TodoTaskService(AppDbContext context, IUserContextService userContextService)
         {
             _context = context;
             _userContextService = userContextService;
