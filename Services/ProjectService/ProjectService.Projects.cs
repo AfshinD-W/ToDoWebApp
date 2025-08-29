@@ -115,11 +115,14 @@ namespace SSToDo.Services.ProjectService
         //Delete project
         public async Task<ServiceResponse<string>> DeleteProjectAsync(int projectId)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
             var project = await _context.Projects.Include(p => p.ProjectUsers)
                 .Select(p => new
                 {
                     project = p,
-                    IsAdmin = p.ProjectUsers.Any(u => u.UserId == _userContextService.GetUserId() && u.IsAdmin)
+                    IsAdmin = p.ProjectUsers.Any(u => u.UserId == _userContextService.GetUserId() && u.IsAdmin),
+                    AdminUser = p.ProjectUsers.FirstOrDefault(u => u.UserId == _userContextService.GetUserId() && u.IsAdmin)
                 }).SingleOrDefaultAsync(p => p.project.Id == projectId);
 
             if (project == null)
@@ -127,9 +130,14 @@ namespace SSToDo.Services.ProjectService
             if (!project.IsAdmin)
                 return new ServiceResponse<string>("You are not the admin");
 
+            var projectInvites = await _context.ProjectUsersInvite.Where(i => i.ProjectId == projectId).ToListAsync();
 
+            _context.Remove(project.AdminUser!);
+            _context.ProjectUsersInvite.RemoveRange(projectInvites);
             _context.Remove(project.project);
             await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
             return new ServiceResponse<string>("Project deleted successfully");
         }
     }
