@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SSToDo.Models.Dtos;
-using SSToDo.Services;
+using SSToDo.Services.ProjectService;
 
 namespace SSToDo.Controllers
 {

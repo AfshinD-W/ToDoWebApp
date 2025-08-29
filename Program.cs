@@ -9,6 +9,7 @@ using SSToDo.Data;
 using SSToDo.Middleware;
 using SSToDo.Models.DtoValidator;
 using SSToDo.Services;
+using SSToDo.Services.ProjectService;
 using SSToDo.Shared;
 using SSToDo.Utilities;
 
