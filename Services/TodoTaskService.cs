@@ -10,7 +10,7 @@ namespace SSToDo.Services
     public interface ITodoTaskService
     {
         Task<ServiceResponse<TodoTask>> CreateTodoTaskAsync(CreateTodoTaskDto dto, int projectId);
-        Task<ServiceResponse<TodoTask>> UpdateTaskAsync(UpdateTodoTaskDto dto, int taskId);
+        Task<ServiceResponse<ResponseTodoTaskDto>> UpdateTaskAsync(UpdateTodoTaskDto dto, int taskId);
         Task<ServiceResponse<string>> DeleteTodoTaskAsync(int taskId);
 
     }
@@ -64,7 +64,7 @@ namespace SSToDo.Services
         }
 
         //Update Todo
-        public async Task<ServiceResponse<TodoTask>> UpdateTaskAsync(UpdateTodoTaskDto dto, int taskId)
+        public async Task<ServiceResponse<ResponseTodoTaskDto>> UpdateTaskAsync(UpdateTodoTaskDto dto, int taskId)
         {
             var task = await _context.TodoTasks
                 .Include(t => t.Project)
@@ -72,7 +72,7 @@ namespace SSToDo.Services
                 .FirstOrDefaultAsync(t => t.Id == taskId);
 
             if (task == null)
-                return new ServiceResponse<TodoTask>("Task not found");
+                return new ServiceResponse<ResponseTodoTaskDto>("Task not found");
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -87,7 +87,7 @@ namespace SSToDo.Services
                         var assignedUserIsMember = task.Project.ProjectUsers.Any(u => u.UserId == dto.AssignedToUserId);
 
                         if (!assignedUserIsMember)
-                            return new ServiceResponse<TodoTask>("This user is not a member of this project.");
+                            return new ServiceResponse<ResponseTodoTaskDto>("This user is not a member of this project.");
 
                         task.AssignedToUserId = dto.AssignedToUserId;
                     }
@@ -109,7 +109,7 @@ namespace SSToDo.Services
                 }
                 else
                 {
-                    return new ServiceResponse<TodoTask>("Only admin can change this parameters.");
+                    return new ServiceResponse<ResponseTodoTaskDto>("Only admin can change this parameters.");
                 }
 
                 if (dto.Status.HasValue && dto.Status != task.Status)
@@ -125,14 +125,14 @@ namespace SSToDo.Services
                             await _context.SaveChangesAsync();
                         }
 
-                        return new ServiceResponse<TodoTask>("Task time is over you cant change it now.");
+                        return new ServiceResponse<ResponseTodoTaskDto>("Task time is over you cant change it now.");
                     }
 
                     if (!isAdmin && task.Status == TaskStatusEnums.Approved)
-                        return new ServiceResponse<TodoTask>("Task is Approved.");
+                        return new ServiceResponse<ResponseTodoTaskDto>("Task is Approved.");
 
                     if (!isAdmin && task.Status != TaskStatusEnums.Submitted)
-                        return new ServiceResponse<TodoTask>("You just can submit the task.");
+                        return new ServiceResponse<ResponseTodoTaskDto>("You just can submit the task.");
 
                     task.Status = dto.Status.Value;
 
@@ -159,12 +159,26 @@ namespace SSToDo.Services
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return new ServiceResponse<TodoTask>(task);
+                var response = new ResponseTodoTaskDto
+                {
+                    Id = task.Id,
+                    ProjectId = task.ProjectId,
+                    Title = task.Title,
+                    Description = task.Description,
+                    AssignedToUserId = task.AssignedToUserId,
+                    StartDate = task.StartDate,
+                    DueDate = task.DueDate,
+                    Status = task.Status,
+                    Priority = task.Priority,
+                    CreatedAt = task.CreatedAt,
+                };
+
+                return new ServiceResponse<ResponseTodoTaskDto>(response);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return new ServiceResponse<TodoTask>(ex.Message);
+                return new ServiceResponse<ResponseTodoTaskDto>(ex.InnerException?.Message ?? ex.Message);
             }
         }
 
